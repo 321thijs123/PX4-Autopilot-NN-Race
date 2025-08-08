@@ -32,76 +32,135 @@
  ****************************************************************************/
 
 /**
- * @file mc_nn_control_params.c
- * Parameters for the Multicopter Neural Network Control module
+ * @file gate_publisher.cu
+ * Parameters for the Gate Publisher module
  *
- * @author Sindre Meyer Hegre <sindre.hegre@gmail.com>
+ * @author Thijs Hof <thijs.hof@home.nl>
  */
 
 /**
- * If true the neural network control is automatically started on boot.
+ * X Position of gate 1 in meters
  *
- * @boolean
- * @group Neural Control
+ * @group Gate Publisher
  */
-PARAM_DEFINE_INT32(MC_NN_EN, 1);
+PARAM_DEFINE_FLOAT(GATE1_X, 5.0f);
+
 
 /**
- * The maximum RPM of the motors. Used to normalize the output of the neural network.
+ * Y Position of gate 1 in meters
  *
- * @min 0
- * @max 80000
- * @group Neural Control
+ * @group Gate Publisher
  */
-PARAM_DEFINE_INT32(MC_NN_MAX_RPM, 32945);
+PARAM_DEFINE_FLOAT(GATE1_Y, 0.0f);
+
 
 /**
- * The minimum RPM of the motors. Used to normalize the output of the neural network.
+ * Z Position of gate 1 in meters
  *
- * @min 0
- * @max 80000
- * @group Neural Control
+ * @group Gate Publisher
  */
-PARAM_DEFINE_INT32(MC_NN_MIN_RPM, 0);
+PARAM_DEFINE_FLOAT(GATE1_Z, 2.0f);
+
 
 /**
- * Thrust coefficient of the motors. Used to normalize the output of the neural network. Divided by 100 000
+ * Yaw of gate 1 in radians
  *
- * @min 0.0
- * @max 5.0
- * @group Neural Control
+ * @group Gate Publisher
  */
-PARAM_DEFINE_FLOAT(MC_NN_THRST_COEF, 4.772f);
+PARAM_DEFINE_FLOAT(GATE1_YAW, 1.57f);
+
 
 /**
- * Non-linearity of thrust to throttle curve
+ * X Position of gate 2 in meters
  *
- * @min 0.0
- * @max 1.0
- * @group Neural Control
+ * @group Gate Publisher
  */
-PARAM_DEFINE_FLOAT(MC_NN_NON_LIN, 0.7f);
+PARAM_DEFINE_FLOAT(GATE2_X, 0.0f);
+
 
 /**
- * Enable or disable setting the trajectory setpoint with manual control.
+ * Y Position of gate 2 in meters
  *
- * @boolean
- * @reboot_required true
- * @group Neural Control
+ * @group Gate Publisher
  */
-PARAM_DEFINE_INT32(MC_NN_MANL_CTRL, 1);
+PARAM_DEFINE_FLOAT(GATE2_Y, 5.0f);
+
 
 /**
- * The outputs of the neural network are multiplied by this value.
+ * Z Position of gate 2 in meters
  *
- * @min 0.01
- * @group Neural Control
+ * @group Gate Publisher
  */
-PARAM_DEFINE_FLOAT(MC_NN_OUT_SCALE, 8.0);
+PARAM_DEFINE_FLOAT(GATE2_Z, 2.0f);
+
 
 /**
- * Offset for altitude related observations.
+ * Yaw of gate 2 in radians
  *
- * @group Neural Control
+ * @group Gate Publisher
  */
-PARAM_DEFINE_FLOAT(MC_NN_Z_OFFSET, 20.0);
+PARAM_DEFINE_FLOAT(GATE2_YAW, 3.14f);
+
+
+/**
+ * X Position of gate 3 in meters
+ *
+ * @group Gate Publisher
+ */
+PARAM_DEFINE_FLOAT(GATE3_X, -5.0f);
+
+
+/**
+ * Y Position of gate 3 in meters
+ *
+ * @group Gate Publisher
+ */
+PARAM_DEFINE_FLOAT(GATE3_Y, 0.0f);
+
+
+/**
+ * Z Position of gate 3 in meters
+ *
+ * @group Gate Publisher
+ */
+PARAM_DEFINE_FLOAT(GATE3_Z, 2.0f);
+
+
+/**
+ * Yaw of gate 3 in radians
+ *
+ * @group Gate Publisher
+ */
+PARAM_DEFINE_FLOAT(GATE3_YAW, -1.57f);
+
+
+/**
+ * X Position of gate 4 in meters
+ *
+ * @group Gate Publisher
+ */
+PARAM_DEFINE_FLOAT(GATE4_X, 0.0f);
+
+
+/**
+ * Y Position of gate 4 in meters
+ *
+ * @group Gate Publisher
+ */
+PARAM_DEFINE_FLOAT(GATE4_Y, -5.0f);
+
+
+/**
+ * Z Position of gate 4 in meters
+ *
+ * @group Gate Publisher
+ */
+PARAM_DEFINE_FLOAT(GATE4_Z, 2.0f);
+
+
+/**
+ * Yaw of gate 4 in radians
+ *
+ * @group Gate Publisher
+ */
+PARAM_DEFINE_FLOAT(GATE4_YAW, 0.0f);

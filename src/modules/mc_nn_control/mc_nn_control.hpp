@@ -150,7 +150,7 @@ private:
 	tflite::MicroInterpreter *_interpreter;
 	TfLiteTensor *_input_tensor;
 	TfLiteTensor *_output_tensor;
-	float _input_data[15];
+	float _input_data[33];
 	trajectory_setpoint_s _trajectory_setpoint;
 	vehicle_angular_velocity_s _angular_velocity;
 	vehicle_local_position_s _position;
@@ -161,6 +161,9 @@ private:
 		(ParamInt<px4::params::MC_NN_MAX_RPM>) _param_max_rpm,
 		(ParamInt<px4::params::MC_NN_MIN_RPM>) _param_min_rpm,
 		(ParamFloat<px4::params::MC_NN_THRST_COEF>) _param_thrust_coeff,
-		(ParamBool<px4::params::MC_NN_MANL_CTRL>) _param_manual_control
+		(ParamFloat<px4::params::MC_NN_NON_LIN>) _param_non_linearity,
+		(ParamBool<px4::params::MC_NN_MANL_CTRL>) _param_manual_control,
+		(ParamFloat<px4::params::MC_NN_OUT_SCALE>) _param_thrust_scale,
+		(ParamFloat<px4::params::MC_NN_Z_OFFSET>) _param_z_offset
 	)
 };

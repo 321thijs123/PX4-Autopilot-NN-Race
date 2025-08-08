@@ -48,7 +48,7 @@
 namespace
 {
 // This number should be the number of operations in the model, like tanh and fully connected
-using NNControlOpResolver = tflite::MicroMutableOpResolver<3>;
+using NNControlOpResolver = tflite::MicroMutableOpResolver<4>;
 
 TfLiteStatus RegisterOps(NNControlOpResolver &op_resolver)
 {
@@ -56,6 +56,7 @@ TfLiteStatus RegisterOps(NNControlOpResolver &op_resolver)
 	TF_LITE_ENSURE_STATUS(op_resolver.AddFullyConnected());
 	TF_LITE_ENSURE_STATUS(op_resolver.AddRelu());
 	TF_LITE_ENSURE_STATUS(op_resolver.AddAdd());
+	TF_LITE_ENSURE_STATUS(op_resolver.AddReshape());
 	return kTfLiteOk;
 }
 }  // namespace
@@ -279,7 +280,7 @@ void MulticopterNeuralNetworkControl::generate_trajectory_setpoint(float dt)
 
 void MulticopterNeuralNetworkControl::PopulateInputTensor()
 {
-	// Creates a 15 element input tensor for the neural network [pos_err(3), lin_vel(3), att(6), ang_vel(3)]
+	// Creates a 33 element input tensor for the neural network [altitude(1), lin_vel(3), att(6), ang_vel(3), gate1_err(3), gate1_rot(2), ..., gate4_err(3), gate4_rot(2)]
 
 	// transform observations in correct frame
 	matrix::Dcmf frame_transf;
@@ -329,23 +330,47 @@ void MulticopterNeuralNetworkControl::PopulateInputTensor()
 					     _angular_velocity.xyz[2]);
 	angular_vel_local = frame_transf * angular_vel_local;
 
-	_input_tensor->data.f[0] = trajectory_setpoint_local(0) - position_local(0);
-	_input_tensor->data.f[1] = trajectory_setpoint_local(1) - position_local(1);
-	_input_tensor->data.f[2] = trajectory_setpoint_local(2) - position_local(2);
-	_input_tensor->data.f[3] = _attitude_local_mat(0, 0);
-	_input_tensor->data.f[4] = _attitude_local_mat(0, 1);
-	_input_tensor->data.f[5] = _attitude_local_mat(0, 2);
-	_input_tensor->data.f[6] = _attitude_local_mat(1, 0);
-	_input_tensor->data.f[7] = _attitude_local_mat(1, 1);
-	_input_tensor->data.f[8] = _attitude_local_mat(1, 2);
-	_input_tensor->data.f[9] = linear_velocity_local(0);
-	_input_tensor->data.f[10] = linear_velocity_local(1);
-	_input_tensor->data.f[11] = linear_velocity_local(2);
-	_input_tensor->data.f[12] = angular_vel_local(0);
-	_input_tensor->data.f[13] = angular_vel_local(1);
-	_input_tensor->data.f[14] = angular_vel_local(2);
+	const float ground_offset = _param_z_offset.get();
 
-	for (int i = 0; i < 15; i++) {
+	_input_tensor->data.f[0] = position_local(2) - ground_offset;
+	_input_tensor->data.f[1] = _attitude_local_mat(0, 0);
+	_input_tensor->data.f[2] = _attitude_local_mat(0, 1);
+	_input_tensor->data.f[3] = _attitude_local_mat(0, 2);
+	_input_tensor->data.f[4] = _attitude_local_mat(1, 0);
+	_input_tensor->data.f[5] = _attitude_local_mat(1, 1);
+	_input_tensor->data.f[6] = _attitude_local_mat(1, 2);
+	_input_tensor->data.f[7] = linear_velocity_local(0);
+	_input_tensor->data.f[8] = linear_velocity_local(1);
+	_input_tensor->data.f[9] = linear_velocity_local(2);
+	_input_tensor->data.f[10] = angular_vel_local(0);
+	_input_tensor->data.f[11] = angular_vel_local(1);
+	_input_tensor->data.f[12] = angular_vel_local(2);
+
+	_input_tensor->data.f[13] = 5.0f - position_local(0) + ground_offset;
+	_input_tensor->data.f[14] = 0.0f - position_local(1);
+	_input_tensor->data.f[15] = 2.0f - position_local(2);
+	_input_tensor->data.f[16] = 0.0f;
+	_input_tensor->data.f[17] = 1.0f;
+
+	_input_tensor->data.f[18] = 0.0f - position_local(0) + ground_offset;
+	_input_tensor->data.f[19] = 5.0f - position_local(1);
+	_input_tensor->data.f[20] = 2.0f - position_local(2);
+	_input_tensor->data.f[21] = -1.0f;
+	_input_tensor->data.f[22] = 0.0f;
+
+	_input_tensor->data.f[23] = -5.0f - position_local(0) + ground_offset;
+	_input_tensor->data.f[24] = 0.0f - position_local(1);
+	_input_tensor->data.f[25] = 2.0f - position_local(2);
+	_input_tensor->data.f[26] = 0.0f;
+	_input_tensor->data.f[27] = -1.0f;
+
+	_input_tensor->data.f[28] = 0.0f - position_local(0) + ground_offset;
+	_input_tensor->data.f[29] = -5.0f - position_local(1);
+	_input_tensor->data.f[30] = 2.0f - position_local(2);
+	_input_tensor->data.f[31] = 0.0f;
+	_input_tensor->data.f[32] = 1.0f;
+
+	for (int i = 0; i < 33; i++) {
 		_input_data[i] = _input_tensor->data.f[i];
 	}
 
@@ -381,8 +406,9 @@ inline void MulticopterNeuralNetworkControl::RescaleActions()
 	const float thrust_coeff = _param_thrust_coeff.get() / 100000.0f;
 	const float min_rpm = _param_min_rpm.get();
 	const float max_rpm = _param_max_rpm.get();
-	const float a = 0.8f;
-	const float b = (1.0f - 0.8f);
+	const float max_thrust = _param_thrust_scale.get();
+	const float a = _param_non_linearity.get();
+	const float b = (1.0f - a);
 	const float tmp1 = b / (2.f * a);
 	const float tmp2 = b * b / (4.f * a * a);
 
@@ -395,7 +421,7 @@ inline void MulticopterNeuralNetworkControl::RescaleActions()
 			_output_tensor->data.f[i] = 1.0f;
 		}
 
-		_output_tensor->data.f[i] = _output_tensor->data.f[i] + 1.0f;
+		_output_tensor->data.f[i] = (_output_tensor->data.f[i] + 1.0f) * max_thrust / 2.0f;
 		float rps = _output_tensor->data.f[i] / thrust_coeff;
 		rps = sqrt(rps);
 		float rpm = rps * 60.0f;
@@ -552,6 +578,13 @@ void MulticopterNeuralNetworkControl::Run()
 			return;
 		}
 
+		// Publish the neural control debug message
+		neural_control_s neural_control;
+		neural_control.network_output[0] = _output_tensor->data.f[0];
+		neural_control.network_output[1] = _output_tensor->data.f[1];
+		neural_control.network_output[2] = _output_tensor->data.f[2];
+		neural_control.network_output[3] = _output_tensor->data.f[3];
+
 		// Convert the output tensor to actuator values
 		RescaleActions();
 
@@ -559,20 +592,13 @@ void MulticopterNeuralNetworkControl::Run()
 
 		int32_t full_controller_time = GetTime() - start_time1;
 
-		// Publish the neural control debug message
-		neural_control_s neural_control;
-		neural_control.timestamp = hrt_absolute_time();
-		neural_control.inference_time = inference_time;
-		neural_control.controller_time = full_controller_time;
-
-		for (int i = 0; i < 15; i++) {
+		for (int i = 0; i < 33; i++) {
 			neural_control.observation[i] = _input_data[i];
 		}
 
-		neural_control.network_output[0] = _output_tensor->data.f[0];
-		neural_control.network_output[1] = _output_tensor->data.f[1];
-		neural_control.network_output[2] = _output_tensor->data.f[2];
-		neural_control.network_output[3] = _output_tensor->data.f[3];
+		neural_control.timestamp = hrt_absolute_time();
+		neural_control.inference_time = inference_time;
+		neural_control.controller_time = full_controller_time;
 		_neural_control_pub.publish(neural_control);
 	}
 

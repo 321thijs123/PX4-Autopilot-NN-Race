@@ -1,0 +1,12 @@
+menuconfig MODULES_GATE_PUBLISHER
+	bool "gate_publisher"
+	default n
+	---help---
+		Enable support for gate_publisher"
+
+menuconfig USER_GATE_PUBLISHER
+	bool "gate_publisher running as userspace module"
+	default y
+	depends on BOARD_PROTECTED && MODULES_GATE_PUBLISHER
+	---help---
+		Put gate_publisher in userspace memory
