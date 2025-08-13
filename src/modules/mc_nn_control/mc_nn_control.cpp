@@ -346,27 +346,27 @@ void MulticopterNeuralNetworkControl::PopulateInputTensor()
 	_input_tensor->data.f[11] = angular_vel_local(1);
 	_input_tensor->data.f[12] = angular_vel_local(2);
 
-	_input_tensor->data.f[13] = 5.0f - position_local(0) + ground_offset;
+	_input_tensor->data.f[13] = 5.0f - position_local(0);
 	_input_tensor->data.f[14] = 0.0f - position_local(1);
-	_input_tensor->data.f[15] = 2.0f - position_local(2);
+	_input_tensor->data.f[15] = 2.0f - position_local(2) + ground_offset;
 	_input_tensor->data.f[16] = 0.0f;
 	_input_tensor->data.f[17] = 1.0f;
 
-	_input_tensor->data.f[18] = 0.0f - position_local(0) + ground_offset;
+	_input_tensor->data.f[18] = 0.0f - position_local(0);
 	_input_tensor->data.f[19] = 5.0f - position_local(1);
-	_input_tensor->data.f[20] = 2.0f - position_local(2);
+	_input_tensor->data.f[20] = 2.0f - position_local(2) + ground_offset;
 	_input_tensor->data.f[21] = -1.0f;
 	_input_tensor->data.f[22] = 0.0f;
 
-	_input_tensor->data.f[23] = -5.0f - position_local(0) + ground_offset;
+	_input_tensor->data.f[23] = -5.0f - position_local(0);
 	_input_tensor->data.f[24] = 0.0f - position_local(1);
-	_input_tensor->data.f[25] = 2.0f - position_local(2);
+	_input_tensor->data.f[25] = 2.0f - position_local(2) + ground_offset;
 	_input_tensor->data.f[26] = 0.0f;
 	_input_tensor->data.f[27] = -1.0f;
 
-	_input_tensor->data.f[28] = 0.0f - position_local(0) + ground_offset;
+	_input_tensor->data.f[28] = 0.0f - position_local(0);
 	_input_tensor->data.f[29] = -5.0f - position_local(1);
-	_input_tensor->data.f[30] = 2.0f - position_local(2);
+	_input_tensor->data.f[30] = 2.0f - position_local(2) + ground_offset;
 	_input_tensor->data.f[31] = 0.0f;
 	_input_tensor->data.f[32] = 1.0f;
 
