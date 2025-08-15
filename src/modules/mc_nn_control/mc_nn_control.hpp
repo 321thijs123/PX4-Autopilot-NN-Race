@@ -78,6 +78,10 @@
 #include <uORB/topics/unregister_ext_component.h>
 #include <uORB/topics/vehicle_control_mode.h>
 #include <uORB/topics/arming_check_reply.h>
+#include <uORB/topics/vehicle_command.h>
+
+// Switching mode
+#include <commander/px4_custom_mode.h>
 
 using namespace time_literals; // For the 1_s in the subscription interval
 class MulticopterNeuralNetworkControl : public ModuleBase<MulticopterNeuralNetworkControl>, public ModuleParams,
@@ -119,6 +123,7 @@ private:
 	void generate_trajectory_setpoint(float dt);
 	void reset_trajectory_setpoint(vehicle_local_position_s &_position);
 	void check_setpoint_validity(vehicle_local_position_s &_position);
+	bool checkSafety();
 
 	// Subscriptions
 	uORB::SubscriptionInterval _parameter_update_sub{ORB_ID(parameter_update), 1_s};
@@ -138,6 +143,7 @@ private:
 	uORB::Publication<unregister_ext_component_s> _unregister_ext_component_pub{ORB_ID(unregister_ext_component)};
 	uORB::Publication<vehicle_control_mode_s> _config_control_setpoints_pub{ORB_ID(config_control_setpoints)};
 	uORB::Publication<arming_check_reply_s> _arming_check_reply_pub{ORB_ID(arming_check_reply)};
+	uORB::Publication<vehicle_command_s> _vehicle_command_pub{ORB_ID(vehicle_command)};
 
 	// Variables
 	bool _use_neural{false};
@@ -164,6 +170,7 @@ private:
 		(ParamFloat<px4::params::MC_NN_NON_LIN>) _param_non_linearity,
 		(ParamBool<px4::params::MC_NN_MANL_CTRL>) _param_manual_control,
 		(ParamFloat<px4::params::MC_NN_OUT_SCALE>) _param_thrust_scale,
-		(ParamFloat<px4::params::MC_NN_Z_OFFSET>) _param_z_offset
+		(ParamFloat<px4::params::MC_NN_Z_OFFSET>) _param_z_offset,
+		(ParamFloat<px4::params::MC_NN_MIN_ALT>) _param_min_alt
 	)
 };

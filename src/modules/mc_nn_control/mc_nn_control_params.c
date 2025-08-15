@@ -104,4 +104,11 @@ PARAM_DEFINE_FLOAT(MC_NN_OUT_SCALE, 8.0);
  *
  * @group Neural Control
  */
-PARAM_DEFINE_FLOAT(MC_NN_Z_OFFSET, 20.0);
+PARAM_DEFINE_FLOAT(MC_NN_Z_OFFSET, 40.0);
+
+/**
+ * Minimum altitude for Neural Control.
+ *
+ * @group Neural Control
+ */
+PARAM_DEFINE_FLOAT(MC_NN_MIN_ALT, 39.0);

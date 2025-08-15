@@ -459,6 +459,36 @@ int MulticopterNeuralNetworkControl::task_spawn(int argc, char *argv[])
 	return PX4_ERROR;
 }
 
+bool MulticopterNeuralNetworkControl::checkSafety() {
+	bool safe = true;
+
+	const float min_alt = _param_min_alt.get();
+
+	// Check if minimum altitude has been reached
+	if (-_position.z < min_alt) {
+		safe = false;
+		PX4_ERR("Altitude too low (%.2f)", double(-_position.z));
+	}
+
+	if (safe) return true;
+
+	PX4_INFO("Switching to hold flight mode");
+
+	vehicle_command_s cmd{};
+
+	cmd.timestamp = hrt_absolute_time();
+	cmd.command = vehicle_command_s::VEHICLE_CMD_DO_SET_MODE;
+	cmd.param1        = 1.f;                  // MAV_MODE_FLAG_CUSTOM_MODE_ENABLED
+	cmd.param2        = PX4_CUSTOM_MAIN_MODE_AUTO;
+	cmd.param3        = PX4_CUSTOM_SUB_MODE_AUTO_LOITER;
+        cmd.from_external = false;                                // internal module request
+
+	_vehicle_command_pub.publish(cmd);
+
+	return false;
+
+	}
+
 void MulticopterNeuralNetworkControl::Run()
 {
 	if (should_exit()) {
@@ -534,6 +564,11 @@ void MulticopterNeuralNetworkControl::Run()
 			    && !PX4_ISFINITE(_trajectory_setpoint.position[2])) {
 				reset_trajectory_setpoint(_position);
 			}
+		}
+
+		if (!checkSafety()) {
+			perf_end(_loop_perf);
+			return;
 		}
 
 		if (_param_manual_control.get()) {
