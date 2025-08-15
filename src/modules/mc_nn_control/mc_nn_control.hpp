@@ -70,6 +70,7 @@
 #include <uORB/topics/arming_check_request.h>
 #include <uORB/topics/parameter_update.h>
 #include <uORB/topics/manual_control_setpoint.h>
+#include <uORB/topics/gates.h>
 
 // Publications
 #include <uORB/topics/actuator_motors.h>
@@ -135,6 +136,7 @@ private:
 	uORB::Subscription _attitude_sub{ORB_ID(vehicle_attitude)};
 	uORB::Subscription _manual_control_setpoint_sub{ORB_ID(manual_control_setpoint)};
 	uORB::SubscriptionCallbackWorkItem _angular_velocity_sub{this, ORB_ID(vehicle_angular_velocity)};
+	uORB::Subscription _gates_sub{ORB_ID(gates)};
 
 	// Publications
 	uORB::Publication<actuator_motors_s> _actuator_motors_pub{ORB_ID(actuator_motors)};
@@ -162,6 +164,8 @@ private:
 	vehicle_local_position_s _position;
 	vehicle_attitude_s _attitude;
 	manual_control_setpoint_s _manual_control_setpoint{};
+	gates_s gates{};
+	bool _gates_received{false};
 
 	DEFINE_PARAMETERS(
 		(ParamInt<px4::params::MC_NN_MAX_RPM>) _param_max_rpm,

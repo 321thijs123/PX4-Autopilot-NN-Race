@@ -346,29 +346,13 @@ void MulticopterNeuralNetworkControl::PopulateInputTensor()
 	_input_tensor->data.f[11] = angular_vel_local(1);
 	_input_tensor->data.f[12] = angular_vel_local(2);
 
-	_input_tensor->data.f[13] = 5.0f - position_local(0);
-	_input_tensor->data.f[14] = 0.0f - position_local(1);
-	_input_tensor->data.f[15] = 2.0f - position_local(2) + ground_offset;
-	_input_tensor->data.f[16] = 0.0f;
-	_input_tensor->data.f[17] = 1.0f;
-
-	_input_tensor->data.f[18] = 0.0f - position_local(0);
-	_input_tensor->data.f[19] = 5.0f - position_local(1);
-	_input_tensor->data.f[20] = 2.0f - position_local(2) + ground_offset;
-	_input_tensor->data.f[21] = -1.0f;
-	_input_tensor->data.f[22] = 0.0f;
-
-	_input_tensor->data.f[23] = -5.0f - position_local(0);
-	_input_tensor->data.f[24] = 0.0f - position_local(1);
-	_input_tensor->data.f[25] = 2.0f - position_local(2) + ground_offset;
-	_input_tensor->data.f[26] = 0.0f;
-	_input_tensor->data.f[27] = -1.0f;
-
-	_input_tensor->data.f[28] = 0.0f - position_local(0);
-	_input_tensor->data.f[29] = -5.0f - position_local(1);
-	_input_tensor->data.f[30] = 2.0f - position_local(2) + ground_offset;
-	_input_tensor->data.f[31] = 0.0f;
-	_input_tensor->data.f[32] = 1.0f;
+	for (int i = 0; i < 4; i++) {
+		_input_tensor->data.f[13+i] = gates.x[i] - position_local(0);
+		_input_tensor->data.f[14+i] = gates.y[i] - position_local(1);
+		_input_tensor->data.f[15+i] = gates.z[i] - position_local(2) + ground_offset;
+		_input_tensor->data.f[16+i] = sin(gates.yaw[i]);
+		_input_tensor->data.f[17+i] = cos(gates.yaw[i]);
+	}
 
 	for (int i = 0; i < 33; i++) {
 		_input_data[i] = _input_tensor->data.f[i];
@@ -470,6 +454,12 @@ bool MulticopterNeuralNetworkControl::checkSafety() {
 		PX4_ERR("Altitude too low (%.2f)", double(-_position.z));
 	}
 
+	// Check if gates have been received
+	if (!_gates_received) {
+		PX4_ERR("Gates not yet received");
+		safe = false;
+	}
+
 	if (safe) return true;
 
 	PX4_INFO("Switching to hold flight mode");
@@ -487,7 +477,7 @@ bool MulticopterNeuralNetworkControl::checkSafety() {
 
 	return false;
 
-	}
+}
 
 void MulticopterNeuralNetworkControl::Run()
 {
@@ -542,6 +532,12 @@ void MulticopterNeuralNetworkControl::Run()
 		// If the neural network flight mode is not enabled, do nothing
 		perf_end(_loop_perf);
 		return;
+	}
+
+	// Check if new gates are available
+	if (_gates_sub.updated()) {
+		_gates_sub.copy(&gates);
+		_gates_received = true;
 	}
 
 	int32_t start_time1 = GetTime();
