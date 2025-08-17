@@ -36,6 +36,7 @@
  * Gate Publisher module, publishes position of gates for autonomous drone racing.
  *
  * @author Thijs Hof <thijs.hof@home.nl>
+ * @author Tom Fransen <twjfransen@gmail.com>
  */
 #pragma once
 
@@ -52,6 +53,7 @@
 
 // Subscriptions
 #include <uORB/topics/parameter_update.h>
+#include <uORB/topics/vehicle_local_position.h>
 
 // Publications
 #include <uORB/topics/gates.h>
@@ -80,13 +82,46 @@ public:
 	bool init();
 
 private:
+	struct Pos {
+		float x, y, z = 0;
+
+		// Addition
+		Pos operator+(const Pos& other) const {
+			return {x + other.x, y + other.y, z + other.z};
+		}
+
+		// Subtraction
+		Pos operator-(const Pos& other) const {
+			return {x - other.x, y - other.y, z - other.z};
+		}
+
+		// Scalar multiplication
+		Pos operator*(float scalar) const {
+			return {x * scalar, y * scalar, z * scalar};
+		}
+
+		// Scalar division
+		Pos operator/(float scalar) const {
+			return {x / scalar, y / scalar, z / scalar};
+		}
+	};
+
+	Pos prevPosition;
+	int next_gate{0};
+	gates_s gates;
+
+	const int N_GATES = 4;
+
 	void Run() override;
+	void set_gates();
+	bool get_gate_passing(Pos gatePos, float gateYaw, Pos curDronePos, Pos prevDronePos, float width, float height);
 
 	// Publications
 	uORB::Publication<gates_s> _gates_pub{ORB_ID(gates)};
 
 	// Subscriptions
 	uORB::SubscriptionInterval _parameter_update_sub{ORB_ID(parameter_update), 1_s};
+	uORB::SubscriptionCallbackWorkItem _position_sub{this, ORB_ID(vehicle_local_position)};
 
 	DEFINE_PARAMETERS(
 		(ParamFloat<px4::params::GATE1_X>) _param_gate1_x,
@@ -104,6 +139,7 @@ private:
 		(ParamFloat<px4::params::GATE4_X>) _param_gate4_x,
 		(ParamFloat<px4::params::GATE4_Y>) _param_gate4_y,
 		(ParamFloat<px4::params::GATE4_Z>) _param_gate4_z,
-		(ParamFloat<px4::params::GATE4_YAW>) _param_gate4_yaw
+		(ParamFloat<px4::params::GATE4_YAW>) _param_gate4_yaw,
+		(ParamFloat<px4::params::MC_NN_Z_OFFSET>) _param_z_offset
 	)
 };

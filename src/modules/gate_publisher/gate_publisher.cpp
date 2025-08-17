@@ -35,6 +35,7 @@
 * Gate Publisher module, publishes position of gates for autonomous drone racing.
 *
 * @author Thijs Hof <thijs.hof@home.nl>
+* @author Tom Fransen <twjfransen@gmail.com>
 */
 
 #include "gate_publisher.hpp"
@@ -43,7 +44,7 @@ GatePublisher::GatePublisher() :
 	ModuleParams(nullptr),
 	WorkItem(MODULE_NAME, px4::wq_configurations::nav_and_controllers)
 {
-
+	set_gates();
 }
 
 GatePublisher::~GatePublisher()
@@ -54,6 +55,11 @@ GatePublisher::~GatePublisher()
 
 bool GatePublisher::init()
 {
+	if (!_position_sub.registerCallback()) {
+		PX4_ERR("callback registration failed");
+		return false;
+	}
+
 	return true;
 }
 
@@ -84,6 +90,67 @@ int GatePublisher::task_spawn(int argc, char *argv[])
 	return PX4_ERROR;
 }
 
+void GatePublisher::set_gates() {
+	const int index_gate1 = (0 - next_gate + N_GATES) % N_GATES;
+	const int index_gate2 = (1 - next_gate + N_GATES) % N_GATES;
+	const int index_gate3 = (2 - next_gate + N_GATES) % N_GATES;
+	const int index_gate4 = (3 - next_gate + N_GATES) % N_GATES;
+
+	gates.timestamp = hrt_absolute_time();
+
+	gates.x[index_gate1] = _param_gate1_x.get();
+	gates.x[index_gate2] = _param_gate2_x.get();
+	gates.x[index_gate3] = _param_gate3_x.get();
+	gates.x[index_gate4] = _param_gate4_x.get();
+
+	gates.y[index_gate1] = _param_gate1_y.get();
+	gates.y[index_gate2] = _param_gate2_y.get();
+	gates.y[index_gate3] = _param_gate3_y.get();
+	gates.y[index_gate4] = _param_gate4_y.get();
+
+	gates.z[index_gate1] = _param_gate1_z.get();
+	gates.z[index_gate2] = _param_gate2_z.get();
+	gates.z[index_gate3] = _param_gate3_z.get();
+	gates.z[index_gate4] = _param_gate4_z.get();
+
+	gates.yaw[index_gate1] = _param_gate1_yaw.get();
+	gates.yaw[index_gate2] = _param_gate2_yaw.get();
+	gates.yaw[index_gate3] = _param_gate3_yaw.get();
+	gates.yaw[index_gate4] = _param_gate4_yaw.get();
+}
+
+bool GatePublisher::get_gate_passing(Pos gatePos, float gateYaw, Pos curDronePos, Pos prevDronePos, float width = 1.0f, float height = 1.0f) {
+	Pos P0 = prevDronePos - gatePos;
+	Pos P1 = curDronePos - gatePos;
+
+	float sin_yaw = sinf(gateYaw);
+	float cos_yaw = cosf(gateYaw);
+
+	Pos P0_local;
+	Pos P1_local;
+
+	P0_local.x = P0.x * cos_yaw - P0.y * sin_yaw;
+	P0_local.y = P0.x * sin_yaw + P0.y * cos_yaw;
+	P0_local.z = P0.z;
+
+	P1_local.x = P1.x * cos_yaw - P1.y * sin_yaw;
+	P1_local.y = P1.x * sin_yaw + P1.y * cos_yaw;
+	P1_local.z = P1.z;
+
+	Pos P_diff = P1_local - P0_local;
+
+	Pos P_hit = P1_local - (P_diff / P_diff.x * P1_local.x);
+
+	bool in_bounds = (
+		std::abs(P_hit.y) < width / 2 &&
+		std::abs(P_hit.z) < height / 2
+	);
+
+	bool through_plane = std::signbit(P0_local.x) != std::signbit(P1_local.x);
+
+	return in_bounds && through_plane;
+}
+
 void GatePublisher::Run()
 {
 	if (should_exit()) {
@@ -98,31 +165,38 @@ void GatePublisher::Run()
 		updateParams();
 	}
 
-	gates_s gates;
+	vehicle_local_position_s position;
 
-	gates.timestamp = hrt_absolute_time();
+	if (_position_sub.update(&position)) {
 
-	gates.x[0] = _param_gate1_x.get();
-	gates.x[1] = _param_gate2_x.get();
-	gates.x[2] = _param_gate3_x.get();
-	gates.x[3] = _param_gate4_x.get();
+		const float ground_offset = _param_z_offset.get();
 
-	gates.y[0] = _param_gate1_y.get();
-	gates.y[1] = _param_gate2_y.get();
-	gates.y[2] = _param_gate3_y.get();
-	gates.y[3] = _param_gate4_y.get();
+		Pos curDronePos = {
+			position.y,
+			position.x,
+			-position.z - ground_offset
+		};
 
-	gates.z[0] = _param_gate1_z.get();
-	gates.z[1] = _param_gate2_z.get();
-	gates.z[2] = _param_gate3_z.get();
-	gates.z[3] = _param_gate4_z.get();
+		Pos nextGatePos = {
+			gates.x[next_gate],
+			gates.y[next_gate],
+			gates.z[next_gate]
+		};
+		float nextGateYaw = gates.yaw[next_gate];
 
-	gates.yaw[0] = _param_gate1_yaw.get();
-	gates.yaw[1] = _param_gate2_yaw.get();
-	gates.yaw[2] = _param_gate3_yaw.get();
-	gates.yaw[3] = _param_gate4_yaw.get();
+		if (get_gate_passing(
+				nextGatePos,
+				nextGateYaw,
+				curDronePos,
+				prevPosition)) {
+			PX4_INFO("Passed Gate %i", next_gate);
 
-	_gates_pub.publish(gates);
+			next_gate = (next_gate + 1) % N_GATES;
+		}
+
+		set_gates();
+		_gates_pub.publish(gates);
+	}
 }
 
 int GatePublisher::custom_command(int argc, char *argv[])
@@ -132,7 +206,7 @@ int GatePublisher::custom_command(int argc, char *argv[])
 
 int GatePublisher::print_status()
 {
-	PX4_INFO("I'm alive");
+	PX4_INFO("Current gate: %i", next_gate);
 
 	return 0;
 }
