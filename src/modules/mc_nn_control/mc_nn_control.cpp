@@ -347,11 +347,11 @@ void MulticopterNeuralNetworkControl::PopulateInputTensor()
 	_input_tensor->data.f[12] = angular_vel_local(2);
 
 	for (int i = 0; i < 4; i++) {
-		_input_tensor->data.f[13+i] = gates.x[i] - position_local(0);
-		_input_tensor->data.f[14+i] = gates.y[i] - position_local(1);
-		_input_tensor->data.f[15+i] = gates.z[i] - position_local(2) + ground_offset;
-		_input_tensor->data.f[16+i] = sin(gates.yaw[i]);
-		_input_tensor->data.f[17+i] = cos(gates.yaw[i]);
+		_input_tensor->data.f[13+5*i] = gates.x[i] - position_local(0);
+		_input_tensor->data.f[14+5*i] = gates.y[i] - position_local(1);
+		_input_tensor->data.f[15+5*i] = gates.z[i] - position_local(2) + ground_offset;
+		_input_tensor->data.f[16+5*i] = sin(gates.yaw[i]);
+		_input_tensor->data.f[17+5*i] = cos(gates.yaw[i]);
 	}
 
 	for (int i = 0; i < 33; i++) {
