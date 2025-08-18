@@ -178,11 +178,11 @@ void GatePublisher::Run()
 		};
 
 		Pos nextGatePos = {
-			gates.x[next_gate],
-			gates.y[next_gate],
-			gates.z[next_gate]
+			gates.x[0],
+			gates.y[0],
+			gates.z[0]
 		};
-		float nextGateYaw = gates.yaw[next_gate];
+		float nextGateYaw = gates.yaw[0];
 
 		if (get_gate_passing(
 				nextGatePos,
@@ -196,6 +196,7 @@ void GatePublisher::Run()
 
 		set_gates();
 		_gates_pub.publish(gates);
+		prevPosition = curDronePos;
 	}
 }
 
