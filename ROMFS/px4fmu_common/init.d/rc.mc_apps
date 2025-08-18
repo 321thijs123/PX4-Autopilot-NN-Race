@@ -39,5 +39,6 @@ land_detector start multicopter
 
 if param compare -s MC_NN_EN 1
 then
+	gate_publisher start
 	mc_nn_control start
 fi
