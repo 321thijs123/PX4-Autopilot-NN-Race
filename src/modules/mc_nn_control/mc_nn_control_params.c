@@ -62,7 +62,7 @@ PARAM_DEFINE_INT32(MC_NN_MAX_RPM, 32945);
  * @max 80000
  * @group Neural Control
  */
-PARAM_DEFINE_INT32(MC_NN_MIN_RPM, 0);
+PARAM_DEFINE_INT32(MC_NN_MIN_RPM, 4228);
 
 /**
  * Thrust coefficient of the motors. Used to normalize the output of the neural network. Divided by 100 000
@@ -80,7 +80,7 @@ PARAM_DEFINE_FLOAT(MC_NN_THRST_COEF, 4.772f);
  * @max 1.0
  * @group Neural Control
  */
-PARAM_DEFINE_FLOAT(MC_NN_NON_LIN, 0.7f);
+PARAM_DEFINE_FLOAT(MC_NN_NON_LIN, 0.56f);
 
 /**
  * Enable or disable setting the trajectory setpoint with manual control.
@@ -92,12 +92,19 @@ PARAM_DEFINE_FLOAT(MC_NN_NON_LIN, 0.7f);
 PARAM_DEFINE_INT32(MC_NN_MANL_CTRL, 1);
 
 /**
- * The outputs of the neural network are multiplied by this value.
+ * The outputs of the neural network is scaled between MC_NN_MIN_THRUST and MC_NN_MAX_THRUST in Newtons.
  *
  * @min 0.01
  * @group Neural Control
  */
-PARAM_DEFINE_FLOAT(MC_NN_OUT_SCALE, 8.0);
+PARAM_DEFINE_FLOAT(MC_NN_MAX_THRUST, 8.0);
+
+/**
+ * The outputs of the neural network is scaled between MC_NN_MIN_THRUST and MC_NN_MAX_THRUST in Newtons.
+ *
+ * @group Neural Control
+ */
+PARAM_DEFINE_FLOAT(MC_NN_MIN_THRUST, 0.237);
 
 /**
  * Offset for altitude related observations.
