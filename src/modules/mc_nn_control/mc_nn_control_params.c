@@ -47,40 +47,31 @@
 PARAM_DEFINE_INT32(MC_NN_EN, 1);
 
 /**
- * The maximum RPM of the motors. Used to normalize the output of the neural network.
- *
- * @min 0
- * @max 80000
- * @group Neural Control
- */
-PARAM_DEFINE_INT32(MC_NN_MAX_RPM, 32945);
-
-/**
- * The minimum RPM of the motors. Used to normalize the output of the neural network.
- *
- * @min 0
- * @max 80000
- * @group Neural Control
- */
-PARAM_DEFINE_INT32(MC_NN_MIN_RPM, 4228);
-
-/**
- * Thrust coefficient of the motors. Used to normalize the output of the neural network. Divided by 100 000
+ * C1 for thrust to throttle curve: throttle = C1 * (C2 * thrust + sqrt(thrust)) / Battery_V
  *
  * @min 0.0
  * @max 5.0
  * @group Neural Control
  */
-PARAM_DEFINE_FLOAT(MC_NN_THRST_COEF, 4.772f);
+PARAM_DEFINE_FLOAT(MC_NN_THR_C1, 3.9825f);
 
 /**
- * Non-linearity of thrust to throttle curve
+ * C2 for thrust to throttle curve: throttle = C1 * (C2 * thrust + sqrt(thrust)) / Battery_V
  *
  * @min 0.0
  * @max 1.0
  * @group Neural Control
  */
-PARAM_DEFINE_FLOAT(MC_NN_NON_LIN, 0.56f);
+PARAM_DEFINE_FLOAT(MC_NN_THR_C2, 0.1100f);
+
+/**
+ * Actual throttle when throttle command of 0.0 is published, depends on ESC configuration.
+ *
+ * @min 0.0
+ * @max 0.999
+ * @group Neural Control
+ */
+PARAM_DEFINE_FLOAT(MC_NN_THR_ZERO, 0.05f);
 
 /**
  * Enable or disable setting the trajectory setpoint with manual control.

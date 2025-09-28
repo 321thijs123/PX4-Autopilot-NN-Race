@@ -383,22 +383,18 @@ void MulticopterNeuralNetworkControl::PublishOutput(float *command_actions)
 	_actuator_motors_pub.publish(actuator_motors);
 }
 
-
-
 inline void MulticopterNeuralNetworkControl::RescaleActions()
 {
-	const float thrust_coeff = _param_thrust_coeff.get() / 100000.0f;
-	const float min_rpm = _param_min_rpm.get();
-	const float max_rpm = _param_max_rpm.get();
 	const float max_thrust = _param_max_thrust.get();
 	const float min_thrust = _param_min_thrust.get();
-	const float a = _param_non_linearity.get();
-	const float b = (1.0f - a);
-	const float tmp1 = b / (2.f * a);
-	const float tmp2 = b * b / (4.f * a * a);
+	const float c1 = _param_throttle_c1.get();
+	const float c2 = _param_throttle_c2.get();
+	const float zero_throttle = _param_zero_throttle.get();
+
+	const float bat_v = _battery_status.voltage_v;
 
 	for (int i = 0; i < 4; i++) {
-
+		// Clip outputs
 		if (_output_tensor->data.f[i] < -1.0f) {
 			_output_tensor->data.f[i] = -1.0f;
 
@@ -409,15 +405,13 @@ inline void MulticopterNeuralNetworkControl::RescaleActions()
 		// Rescale output between min and max thrust
 		_output_tensor->data.f[i] = _output_tensor->data.f[i] * (max_thrust - min_thrust) / 2.0f + (max_thrust + min_thrust) / 2.0f;
 
-		float rps = _output_tensor->data.f[i] / thrust_coeff;
-		rps = sqrt(rps);
-		float rpm = rps * 60.0f;
-		_output_tensor->data.f[i] = (rpm * 2.0f - max_rpm - min_rpm) / (max_rpm - min_rpm);
-		_output_tensor->data.f[i] = a * (((_output_tensor->data.f[i] + 1.0f) / 2.0f + tmp1) * ((
-				_output_tensor->data.f[i] + 1.0f) / 2.0f + tmp1) - tmp2);
+		// Thrust to throttle
+		_output_tensor->data.f[i] = c1 * (c2 * _output_tensor->data.f[i] + sqrt(_output_tensor->data.f[i])) / bat_v;
+
+		// Rescale throttle
+		_output_tensor->data.f[i] = (_output_tensor->data.f[i] - zero_throttle) / (1 - zero_throttle);
 	}
 }
-
 
 int MulticopterNeuralNetworkControl::task_spawn(int argc, char *argv[])
 {
@@ -467,6 +461,12 @@ bool MulticopterNeuralNetworkControl::checkSafety() {
 	// Check if gates have been received
 	if (!_gates_received) {
 		PX4_ERR("Gates not yet received");
+		safe = false;
+	}
+
+	// Ensure battery voltage is not zero
+	if (_battery_status.voltage_v == 0.0f) {
+		PX4_ERR("Battery voltage = 0.0V");
 		safe = false;
 	}
 
@@ -570,6 +570,10 @@ void MulticopterNeuralNetworkControl::Run()
 			    && !PX4_ISFINITE(_trajectory_setpoint.position[2])) {
 				reset_trajectory_setpoint(_position);
 			}
+		}
+
+		if (_battery_status_sub.updated()) {
+			_battery_status_sub.copy(&_battery_status);
 		}
 
 		if (!checkSafety()) {

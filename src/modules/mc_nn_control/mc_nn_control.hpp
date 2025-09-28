@@ -71,6 +71,7 @@
 #include <uORB/topics/parameter_update.h>
 #include <uORB/topics/manual_control_setpoint.h>
 #include <uORB/topics/gates.h>
+#include <uORB/topics/battery_status.h>
 
 // Publications
 #include <uORB/topics/actuator_motors.h>
@@ -137,6 +138,7 @@ private:
 	uORB::Subscription _manual_control_setpoint_sub{ORB_ID(manual_control_setpoint)};
 	uORB::SubscriptionCallbackWorkItem _angular_velocity_sub{this, ORB_ID(vehicle_angular_velocity)};
 	uORB::Subscription _gates_sub{ORB_ID(gates)};
+	uORB::Subscription _battery_status_sub{ORB_ID(battery_status)};
 
 	// Publications
 	uORB::Publication<actuator_motors_s> _actuator_motors_pub{ORB_ID(actuator_motors)};
@@ -165,14 +167,14 @@ private:
 	vehicle_attitude_s _attitude;
 	manual_control_setpoint_s _manual_control_setpoint{};
 	gates_s gates{};
+	battery_status_s _battery_status{};
 	bool _gates_received{false};
 
 	DEFINE_PARAMETERS(
-		(ParamInt<px4::params::MC_NN_MAX_RPM>) _param_max_rpm,
-		(ParamInt<px4::params::MC_NN_MIN_RPM>) _param_min_rpm,
-		(ParamFloat<px4::params::MC_NN_THRST_COEF>) _param_thrust_coeff,
-		(ParamFloat<px4::params::MC_NN_NON_LIN>) _param_non_linearity,
 		(ParamBool<px4::params::MC_NN_MANL_CTRL>) _param_manual_control,
+		(ParamFloat<px4::params::MC_NN_THR_C1>) _param_throttle_c1,
+		(ParamFloat<px4::params::MC_NN_THR_C2>) _param_throttle_c2,
+		(ParamFloat<px4::params::MC_NN_THR_ZERO>) _param_zero_throttle,
 		(ParamFloat<px4::params::MC_NN_MAX_THRUST>) _param_max_thrust,
 		(ParamFloat<px4::params::MC_NN_MIN_THRUST>) _param_min_thrust,
 		(ParamFloat<px4::params::MC_NN_Z_OFFSET>) _param_z_offset,
