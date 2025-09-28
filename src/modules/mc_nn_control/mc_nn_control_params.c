@@ -107,8 +107,45 @@ PARAM_DEFINE_FLOAT(MC_NN_OUT_SCALE, 8.0);
 PARAM_DEFINE_FLOAT(MC_NN_Z_OFFSET, 40.0);
 
 /**
- * Minimum altitude for Neural Control.
+ * Minimum X Position for Neural Control expressed in local ENU frame.
  *
  * @group Neural Control
  */
-PARAM_DEFINE_FLOAT(MC_NN_MIN_ALT, 39.0);
+PARAM_DEFINE_FLOAT(MC_NN_MIN_X, -20.0);
+
+/**
+ * Maximum X Position for Neural Control expressed in local ENU frame.
+ *
+ * @group Neural Control
+ */
+PARAM_DEFINE_FLOAT(MC_NN_MAX_X, 20.0);
+
+
+/**
+ * Minimum Y Position for Neural Control expressed in local ENU frame.
+ *
+ * @group Neural Control
+ */
+PARAM_DEFINE_FLOAT(MC_NN_MIN_Y, -20.0);
+
+/**
+ * Maximum Y Position for Neural Control expressed in local ENU frame.
+ *
+ * @group Neural Control
+ */
+PARAM_DEFINE_FLOAT(MC_NN_MAX_Y, 20.0);
+
+
+/**
+ * Minimum Z Position for Neural Control expressed in local ENU frame.
+ *
+ * @group Neural Control
+ */
+PARAM_DEFINE_FLOAT(MC_NN_MIN_Z, 39.0);
+
+/**
+ * Maximum Z Position for Neural Control expressed in local ENU frame.
+ *
+ * @group Neural Control
+ */
+PARAM_DEFINE_FLOAT(MC_NN_MAX_Z, 120.0);

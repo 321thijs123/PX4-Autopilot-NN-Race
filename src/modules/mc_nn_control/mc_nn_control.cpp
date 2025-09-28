@@ -446,13 +446,20 @@ int MulticopterNeuralNetworkControl::task_spawn(int argc, char *argv[])
 bool MulticopterNeuralNetworkControl::checkSafety() {
 	bool safe = true;
 
-	const float min_alt = _param_min_alt.get();
+	const float max_x = _param_max_x.get();
+	const float min_x = _param_min_x.get();
+	const float max_y = _param_max_y.get();
+	const float min_y = _param_min_y.get();
+	const float max_z = _param_max_z.get();
+	const float min_z = _param_min_z.get();
 
-	// Check if minimum altitude has been reached
-	if (-_position.z < min_alt) {
-		safe = false;
-		PX4_ERR("Altitude too low (%.2f)", double(-_position.z));
-	}
+	// Check if position limits have been exceeded (ENU Frame)
+	if ( _position.y > max_x) { safe = false; PX4_ERR("Upper X position limit (%.2f) exceeded: X=%.2f", double(max_x), double(_position.y)); }
+	if ( _position.y < min_x) { safe = false; PX4_ERR("Lower X position limit (%.2f) not reached: X=%.2f", double(min_x), double(_position.y)); }
+	if ( _position.x > max_y) { safe = false; PX4_ERR("Upper Y position limit (%.2f) exceeded: Y=%.2f", double(max_y), double(_position.x)); }
+	if ( _position.x < min_y) { safe = false; PX4_ERR("Lower Y position limit (%.2f) not reached: Y=%.2f", double(min_y), double(_position.x)); }
+	if (-_position.z > max_z) { safe = false; PX4_ERR("Upper Z position limit (%.2f) exceeded: Z=%.2f", double(max_z), double(-_position.z)); }
+	if (-_position.z < min_z) { safe = false; PX4_ERR("Lower Z position limit (%.2f) not reached: Z=%.2f", double(min_z), double(-_position.z)); }
 
 	// Check if gates have been received
 	if (!_gates_received) {

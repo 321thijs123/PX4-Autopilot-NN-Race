@@ -175,6 +175,11 @@ private:
 		(ParamBool<px4::params::MC_NN_MANL_CTRL>) _param_manual_control,
 		(ParamFloat<px4::params::MC_NN_OUT_SCALE>) _param_thrust_scale,
 		(ParamFloat<px4::params::MC_NN_Z_OFFSET>) _param_z_offset,
-		(ParamFloat<px4::params::MC_NN_MIN_ALT>) _param_min_alt
+		(ParamFloat<px4::params::MC_NN_MIN_X>) _param_min_x,
+		(ParamFloat<px4::params::MC_NN_MAX_X>) _param_max_x,
+		(ParamFloat<px4::params::MC_NN_MIN_Y>) _param_min_y,
+		(ParamFloat<px4::params::MC_NN_MAX_Y>) _param_max_y,
+		(ParamFloat<px4::params::MC_NN_MIN_Z>) _param_min_z,
+		(ParamFloat<px4::params::MC_NN_MAX_Z>) _param_max_z
 	)
 };
