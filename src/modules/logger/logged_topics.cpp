@@ -296,7 +296,6 @@ void LoggedTopics::add_debug_topics()
 	add_topic("mag_worker_data");
 	add_topic("sensor_preflight_mag", 500);
 	add_topic("actuator_test", 500);
-	add_topic("neural_control", 50);
 }
 
 void LoggedTopics::add_estimator_replay_topics()
@@ -372,6 +371,26 @@ void LoggedTopics::add_high_rate_sensors_topics()
 	add_topic_multi("sensor_optical_flow", 0, 2);
 	add_topic_multi("sensor_gps", 0, 4);
 	add_topic_multi("sensor_mag", 0, 4);
+}
+
+void LoggedTopics::add_neural_control_topics()
+{
+	add_topic("neural_control");
+	add_topic("gates", 1000);
+
+	add_topic_multi("sensor_accel");
+	add_topic_multi("sensor_gyro");
+	add_topic_multi("sensor_gps");
+	add_topic("sensor_combined");
+
+	add_topic("vehicle_angular_velocity");
+	add_topic("vehicle_attitude");
+	add_topic("vehicle_acceleration");
+	add_topic("vehicle_local_position");
+
+	add_topic_multi("battery_status");
+	add_topic("esc_status", 5);
+	add_topic("actuator_motors");
 }
 
 void LoggedTopics::add_mavlink_tunnel()
@@ -592,5 +611,9 @@ void LoggedTopics::initialize_configured_topics(SDLogProfileMask profile)
 
 	if (profile & SDLogProfileMask::HIGH_RATE_SENSORS) {
 		add_high_rate_sensors_topics();
+	}
+
+	if (profile & SDLogProfileMask::NEURAL_CONTROL) {
+		add_neural_control_topics();
 	}
 }

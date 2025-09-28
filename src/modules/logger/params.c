@@ -127,9 +127,11 @@ PARAM_DEFINE_INT32(SDLOG_MISSION, 0);
  * 8 : Raw FIFO high-rate IMU (Gyro)
  * 9 : Raw FIFO high-rate IMU (Accel)
  * 10: Logging of mavlink tunnel message (useful for payload communication debugging)
+ * 11: High rate logging of distance sensor, optical flow, gps, and magnetometer
+ * 12: Logging for evaluation of neural control
  *
  * @min 0
- * @max 4095
+ * @max 8191
  * @bit 0 Default set (general log analysis)
  * @bit 1 Estimator replay (EKF2)
  * @bit 2 Thermal calibration
@@ -142,6 +144,7 @@ PARAM_DEFINE_INT32(SDLOG_MISSION, 0);
  * @bit 9 Raw FIFO high-rate IMU (Accel)
  * @bit 10 Mavlink tunnel message logging
  * @bit 11 High rate sensors
+ * @bit 12 Neural control
  * @reboot_required true
  * @group SD Logging
  */
