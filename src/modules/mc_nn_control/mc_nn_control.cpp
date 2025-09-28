@@ -366,10 +366,28 @@ void MulticopterNeuralNetworkControl::PublishOutput(float *command_actions)
 	actuator_motors_s actuator_motors;
 	actuator_motors.timestamp = hrt_absolute_time();
 
-	actuator_motors.control[0] = PX4_ISFINITE(command_actions[0]) ? command_actions[0] : NAN;
-	actuator_motors.control[1] = PX4_ISFINITE(command_actions[1]) ? command_actions[1] : NAN;
-	actuator_motors.control[2] = PX4_ISFINITE(command_actions[2]) ? command_actions[2] : NAN;
-	actuator_motors.control[3] = PX4_ISFINITE(command_actions[3]) ? command_actions[3] : NAN;
+	float output;
+	if (counter < 22000) {
+		output = int(counter/2000) * 0.1;
+	}
+	else {
+		output = 0.0;
+	}
+
+	float output;
+	if (counter < 10000) {
+		output = int(counter/2000) % 2;
+	}
+	else {
+		output = 0.0;
+	}
+
+	actuator_motors.control[0] = output;
+	actuator_motors.control[1] = output;
+	actuator_motors.control[2] = output;
+	actuator_motors.control[3] = output;
+	counter++;
+
 	actuator_motors.control[4] = -NAN;
 	actuator_motors.control[5] = -NAN;
 	actuator_motors.control[6] = -NAN;
@@ -540,6 +558,7 @@ void MulticopterNeuralNetworkControl::Run()
 
 	if (!_use_neural) {
 		// If the neural network flight mode is not enabled, do nothing
+		counter = 0;
 		perf_end(_loop_perf);
 		return;
 	}

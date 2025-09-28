@@ -170,6 +170,8 @@ private:
 	battery_status_s _battery_status{};
 	bool _gates_received{false};
 
+	int counter = 0;
+
 	DEFINE_PARAMETERS(
 		(ParamBool<px4::params::MC_NN_MANL_CTRL>) _param_manual_control,
 		(ParamFloat<px4::params::MC_NN_THR_C1>) _param_throttle_c1,
