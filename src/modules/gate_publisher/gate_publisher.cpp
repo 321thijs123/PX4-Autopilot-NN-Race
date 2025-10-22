@@ -129,12 +129,12 @@ bool GatePublisher::get_gate_passing(Pos gatePos, float gateYaw, Pos curDronePos
 	Pos P0_local;
 	Pos P1_local;
 
-	P0_local.x = P0.x * cos_yaw - P0.y * sin_yaw;
-	P0_local.y = P0.x * sin_yaw + P0.y * cos_yaw;
+	P0_local.x = P0.x * cos_yaw + P0.y * sin_yaw;
+	P0_local.y = -P0.x * sin_yaw + P0.y * cos_yaw;
 	P0_local.z = P0.z;
 
-	P1_local.x = P1.x * cos_yaw - P1.y * sin_yaw;
-	P1_local.y = P1.x * sin_yaw + P1.y * cos_yaw;
+	P1_local.x = P1.x * cos_yaw + P1.y * sin_yaw;
+	P1_local.y = -P1.x * sin_yaw + P1.y * cos_yaw;
 	P1_local.z = P1.z;
 
 	Pos P_diff = P1_local - P0_local;
